@@ -1,5 +1,4 @@
 import {
-  CancellationToken,
   DocumentLink,
   DocumentLinkProvider,
   Range,
@@ -8,7 +7,7 @@ import {
 } from "vscode";
 
 /** Matches " - [branch-name_etc] # but not comments after" */
-const BRANCH_NAME_REGEX = /\s+-([\w-]+)/s;
+const BRANCH_NAME_REGEX = /\s+-\s+([\w-]+)/g;
 
 /**
  * Provide links for the given regex and target template.
@@ -17,22 +16,32 @@ export class PrTrainLinkProvider implements DocumentLinkProvider {
   constructor() {}
 
   public provideDocumentLinks(
-    document: Pick<TextDocument, "getText" | "positionAt">,
-    token: CancellationToken
+    document: Pick<TextDocument, "getText" | "positionAt">
   ): DocumentLink[] {
     const text = document.getText();
-    let match: RegExpExecArray | null;
 
     const links: DocumentLink[] = [];
+    const matches = text.matchAll(BRANCH_NAME_REGEX);
 
-    // is this while loop necessary?
-    while ((match = BRANCH_NAME_REGEX.exec(text))) {
-      const startPos = document.positionAt(match.index);
-      const endPos = document.positionAt(match.index + match[0].length);
-      const range = new Range(startPos, endPos);
-      links.push(new DocumentLink(range, Uri.parse("https://canva.com")));
-    }
+    return [...matches].map((match) => {
+      const [line, branchName] = match;
 
-    return links;
+      const start = match.index + line.indexOf(branchName);
+      const end = start + branchName.length;
+
+      const range = new Range(
+        document.positionAt(start),
+        document.positionAt(end)
+      );
+
+      return new DocumentLink(
+        range,
+        Uri.parse(
+          `command:prTrain.checkout?${encodeURIComponent(
+            JSON.stringify({ branchName })
+          )}`
+        )
+      );
+    });
   }
 }
