@@ -15,7 +15,7 @@ export function activate(context: ExtensionContext) {
     {
       language: "yaml",
       scheme: "file",
-      pattern: "**/pr-train.yml",
+      pattern: "**/.pr-train.yml",
     },
     new PrTrainLinkProvider()
   );
