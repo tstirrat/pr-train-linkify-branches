@@ -1,17 +1,9 @@
-import {
-  Extension,
-  ExtensionContext,
-  commands,
-  extensions,
-  languages,
-  window,
-  workspace,
-} from "vscode";
+import * as vscode from "vscode";
 import { API as BuiltInGitApi, GitExtension } from "../@types/vscode.git";
 import { PrTrainLinkProvider } from "./provider";
 
-export function activate(context: ExtensionContext) {
-  const dispose = languages.registerDocumentLinkProvider(
+export function activate(context: vscode.ExtensionContext) {
+  const dispose = vscode.languages.registerDocumentLinkProvider(
     {
       language: "yaml",
       scheme: "file",
@@ -20,13 +12,13 @@ export function activate(context: ExtensionContext) {
     new PrTrainLinkProvider()
   );
 
-  commands.registerCommand(
+  vscode.commands.registerCommand(
     "prTrain.checkout",
     async ({ branchName }: { branchName?: string }) => {
       if (!branchName) throw new Error("branchName required");
 
       try {
-        const gitExtension = extensions.getExtension("vscode.git");
+        const gitExtension = vscode.extensions.getExtension("vscode.git");
 
         if (!gitExtension) throw new Error("vscode.git not found");
 
@@ -41,8 +33,11 @@ export function activate(context: ExtensionContext) {
 
         await repo.checkout(branchName);
       } catch (error) {
-        // TODO: better errors
-        console.error(error);
+        vscode.window.showErrorMessage(
+          `PR Train couldn't switch to ${branchName}: ${
+            (error as Error).message
+          }`
+        );
         throw error;
       }
     }
@@ -52,20 +47,15 @@ export function activate(context: ExtensionContext) {
 }
 
 async function getBuiltInGitApi(): Promise<BuiltInGitApi | undefined> {
-  try {
-    const extension = extensions.getExtension(
-      "vscode.git"
-    ) as Extension<GitExtension>;
+  const extension = vscode.extensions.getExtension(
+    "vscode.git"
+  ) as vscode.Extension<GitExtension>;
 
-    if (extension) {
-      const gitExtension = extension.isActive
-        ? extension.exports
-        : await extension.activate();
+  if (extension) {
+    const gitExtension = extension.isActive
+      ? extension.exports
+      : await extension.activate();
 
-      return gitExtension.getAPI(1);
-    }
-  } catch (error) {
-    console.error(error);
-    throw error;
+    return gitExtension.getAPI(1);
   }
 }
