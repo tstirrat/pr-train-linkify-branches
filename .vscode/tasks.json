@@ -15,6 +15,12 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "install",
+      "type": "shell",
+      "command": "npx @vscode/vsce package && code --install-extension pr-train-linkify-branches-0.9.0.vsix",
+      "problemMatcher": []
     }
   ]
 }
