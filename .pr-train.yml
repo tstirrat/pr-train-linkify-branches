@@ -1,0 +1,9 @@
+# example file
+prs:
+  print-urls: true
+
+trains:
+  test:
+    - master
+    - test-branch
+    - tstirrat-branch-test
