@@ -7,7 +7,7 @@ import {
 } from "vscode";
 
 /** Matches " - [branch-name_etc] # but not comments after" */
-const BRANCH_NAME_REGEX = /\s+-\s+([\w-]+)/g;
+const BRANCH_NAME_REGEX = /\s+-\s+([\w-\.]+)/g;
 
 /**
  * Provide links for the given regex and target template.
